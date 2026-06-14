@@ -1,7 +1,10 @@
-"""Client for interacting with Google Gemini API."""
+"""Client for interacting with OpenRouter API (DeepSeek V3)."""
 
-import google.generativeai as genai
+import httpx
 from config import settings
+
+_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+_MODEL = "deepseek/deepseek-v3"
 
 SYSTEM_PROMPT = """คุณคือผู้ช่วย AI ประจำร้าน "สวนปาริชาติ" ร้านขายไม้ดอกไม้ประดับ
 ตอบแทนร้านผ่าน LINE Official Account
@@ -59,17 +62,25 @@ SYSTEM_PROMPT = """คุณคือผู้ช่วย AI ประจำร
 ข้อมูลสินค้าที่มีอยู่:
 {product_context}"""
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
-
 def ask_gemini(user_message: str, product_context: str = "") -> str:
-    """Send a message to Gemini and get a response."""
+    """Send a message to OpenRouter (DeepSeek V3) and get a response."""
     system = SYSTEM_PROMPT.format(
         product_context=product_context or "ไม่มีข้อมูลสินค้าในตอนนี้"
     )
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=system)
-        response = model.generate_content(user_message)
-        return response.text
+        response = httpx.post(
+            _OPENROUTER_URL,
+            headers={"Authorization": f"Bearer {settings.OPENROUTER_API_KEY}"},
+            json={
+                "model": _MODEL,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_message},
+                ],
+            },
+            timeout=60.0,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
     except Exception as e:
         return f"ขออภัยนะคะ เกิดข้อผิดพลาด: {str(e)}"
