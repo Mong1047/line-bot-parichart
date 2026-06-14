@@ -12,7 +12,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 from config import settings
-from ollama_client import ask_ollama
+from gemini_client import ask_gemini
 from sheet_rag import sheet_rag
 
 # LINE SDK setup
@@ -34,35 +34,7 @@ def handle_message(event: MessageEvent):
     if search_results:
         full_context += "\n\n" + search_results
 
-    # Get AI response (run synchronously in the event loop)
-    import asyncio
-
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        # We're in an async context, create a new task
-        import threading
-
-        result_container = []
-
-        def run_async():
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            result = new_loop.run_until_complete(
-                ask_ollama(user_message, full_context)
-            )
-            result_container.append(result)
-            new_loop.close()
-
-        thread = threading.Thread(target=run_async)
-        thread.start()
-        thread.join()
-        reply_text = result_container[0] if result_container else "ขออภัยครับ/คะ เกิดข้อผิดพลาด"
-    else:
-        reply_text = asyncio.run(ask_ollama(user_message, full_context))
+    reply_text = ask_gemini(user_message, full_context)
 
     # Reply via LINE
     with ApiClient(configuration) as api_client:
