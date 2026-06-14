@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from linebot.v3.exceptions import InvalidSignatureError
+from mangum import Mangum
 
 from config import settings
 from gemini_client import check_gemini_health
@@ -100,5 +101,5 @@ async def webhook(request: Request):
         )
 
 
-# Vercel serverless handler (for ASGI compatibility)
-# FastAPI app is the actual handler; this is just for Vercel's ASGI interface
+# Vercel serverless handler (Mangum bridges FastAPI ASGI → Vercel WSGI)
+handler = Mangum(app)

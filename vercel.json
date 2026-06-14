@@ -5,6 +5,7 @@
       "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
+        "handler": "api/index.handler",
         "maxLambdaSize": "50mb",
         "runtime": "python3.11"
       }
