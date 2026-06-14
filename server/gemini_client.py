@@ -4,7 +4,7 @@ import httpx
 from config import settings
 
 _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-_MODEL = "deepseek/deepseek-v3"
+_MODEL = "google/gemini-2.0-flash-exp:free"
 
 SYSTEM_PROMPT = """คุณคือผู้ช่วย AI ประจำร้าน "สวนปาริชาติ" ร้านขายไม้ดอกไม้ประดับ
 ตอบแทนร้านผ่าน LINE Official Account
